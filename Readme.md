@@ -1,71 +1,123 @@
-# Interactive Commit History Visualization with Gource
+# Git Visual History (Gource GUI)
 
-This script provides an interactive visualization of the commit history of a project using [Gource](https://github.com/acaudwell/Gource), a software version control visualization tool. It allows you to explore the evolution of the project's files and directories over time, and see who made changes to the codebase.
+`git_visual_history` is a `CustomTkinter` desktop launcher for visualizing a git repository with [Gource](https://github.com/acaudwell/Gource).
 
----
-
-## Introduction
-
-Have you ever wanted to explore the history of your project's codebase in an interactive and visual way? This script provides an easy way to create a Gource visualization of your project's commit history. With Gource, you can see how files and directories have evolved over time, and who made changes to them. This can be a great tool for understanding the evolution of your codebase, identifying patterns in development, and even creating videos to showcase your project's progress.
-
----
-
-## Getting Started
-My apologies for the confusion in my previous response. Here's an updated Prerequisites section that includes instructions for installing Python:
-
-### Prerequisites
-
-#### Python
-
-To use this script, you need to have Python installed on your system. Here's how to install it:
-
-1. Go to the [official Python website](https://www.python.org/downloads/) and download the appropriate installer for your operating system.
-2. Follow the installation instructions provided in the installer.
-
-Once Python is installed, you should be able to run it from the command line. You can verify that Python is installed correctly by running the command `python --version` in your terminal or command prompt. If Python is installed correctly, you should see the version number printed in the output.
-
-#### Gource
-
-You also need to have Gource installed on your system. Here's how to install it:
-
-1. Go to the official [Gource repository](https://github.com/acaudwell/Gource) on GitHub.
-2. Download the appropriate installer for your operating system (Windows, macOS, or Linux).
-3. Follow the installation instructions provided in the installer.
-
-Once Gource is installed, you should be able to run it from the command line. You can verify that Gource is installed correctly by running the command `gource --version` in your terminal or command prompt. If Gource is installed correctly, you should see the version number printed in the output.
-
-### Setup
-
-1. Navigate to the directory containing the script.
-2. Modify the script with your desired parameters (e.g., working directory, Gource options).
-3. Run the script in your terminal or command prompt.
+It keeps the same core behavior as the original script (launch Gource with preset options), but now matches the newer tools in this repo:
+- GUI settings editor
+- persistent `config.json`
+- first-run defaults from `config_default.json`
+- window size / theme persistence
+- launch status + command preview
 
 ---
 
-## Usage
+## Requirements
 
-To run the script, open your terminal or command prompt and navigate to the directory containing the script. Then, run the script with the command:
+### Python
 
-```python
-python visualize_history.py
+- Python 3.10+ recommended
+
+### Python package
+
+- `customtkinter`
+
+Install:
+
+```bash
+pip install customtkinter
 ```
 
-When you run the script, you will be prompted to enter the working directory for the subprocess. This is the directory where the Gource visualization will be created. You can enter a relative or absolute path.
+### Gource
 
-The script will then automatically detect the project name, set Gource parameters, and attempt to run Gource using the available executables (`gource` and `gource.cmd`). You can modify the Gource options in the script to customize the visualization.
+Install Gource and ensure one of these works in your terminal:
+- `gource`
+- `gource.cmd`
 
-Once the Gource visualization is created, you can use the keyboard controls to interact with it. See the Gource Controls section in the script for a list of available controls.
-
----
-
-## Contributing
-
-If you find any issues or have suggestions for improving the script, please open an issue or submit a pull request on GitHub.
+You can also point the app at a full executable path in the GUI/config.
 
 ---
 
-## License
+## Run
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+From the repo root:
+
+```bash
+python git/git_visual_history/visualize_history.py
+```
+
+The app opens a GUI where you can:
+- choose the repository path
+- detect/test Gource executable lookup
+- edit common Gource options
+- save config
+- preview the generated command
+- launch/terminate Gource
 
 ---
+
+## Config Files
+
+Files are stored beside the script:
+- `git/git_visual_history/config_default.json`
+- `git/git_visual_history/config.json`
+
+Behavior:
+- On first run, `config.json` is created automatically (from defaults).
+- On later runs, user values in `config.json` override defaults.
+
+### Common config fields
+
+- `repo_path`: repository to visualize (relative to the script folder or absolute path)
+- `gource_executables`: executable candidates checked in order
+- `prompt_before_launch`: GUI confirmation dialog before launching Gource
+- `prompt_before_close`: notify when Gource exits
+- `show_controls`: prints Gource controls into the app log before launch
+- `title_prefix`: prefix used for the Gource window title
+- `logo_path`: logo path relative to repo root (or absolute path)
+- `extra_args`: additional raw Gource args (one per line in GUI)
+
+### `gource_options`
+
+The GUI edits these common options:
+- `fullscreen`
+- `camera_mode`
+- `background`
+- `seconds_per_day`
+- `auto_skip_seconds`
+- `file_idle_time`
+- `max_file_lag`
+- `bloom_multiplier`
+- `bloom_intensity`
+- `branch_elasticity`
+- `show_key`
+- `highlight_users`
+
+---
+
+## Notes
+
+- `color_theme` changes are persisted, but a restart may be required for full visual effect.
+- `logo_path` is resolved relative to the selected repo path.
+- The launcher does not bundle Gource; it only launches it.
+
+---
+
+## Troubleshooting
+
+### "No suitable Gource executable found"
+
+- Confirm Gource is installed.
+- Confirm `gource` runs in a terminal.
+- Add the full path to `gource.exe` in `gource_executables`.
+
+### "Not a git repository (missing .git)"
+
+- Set `repo_path` to a folder that contains a `.git` directory.
+
+### `customtkinter` import error
+
+Install the dependency:
+
+```bash
+pip install customtkinter
+```
