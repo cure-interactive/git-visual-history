@@ -6,6 +6,8 @@
   "appearance_mode": "System",
   "color_theme": "blue",
   "repo_path": "../../",
+  "recent_repo_paths_max": 16,
+  "recent_repo_paths": [],
   "gource_executables": [
     "gource",
     "gource.cmd"

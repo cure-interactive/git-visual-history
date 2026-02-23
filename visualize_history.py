@@ -76,6 +76,8 @@ DEFAULT_CONFIG: dict[str, Any] = {
   "appearance_mode": "System",
   "color_theme": "blue",
   "repo_path": "../../",
+  "recent_repo_paths_max": 16,
+  "recent_repo_paths": [],
   "gource_executables": ["gource", "gource.cmd"],
   "prompt_before_launch": True,
   "prompt_before_close": False,
@@ -255,6 +257,32 @@ def _split_lines_list(value: str) -> list[str]:
   return [line.strip() for line in value.splitlines() if line.strip()]
 
 
+def _norm_dir(path_value: str) -> str:
+  return os.path.normpath(os.path.abspath(path_value))
+
+
+def _dedupe_keep_order(items: list[str]) -> list[str]:
+  seen: set[str] = set()
+  out: list[str] = []
+  for item in items:
+    if item in seen:
+      continue
+    seen.add(item)
+    out.append(item)
+  return out
+
+
+def _filter_existing_dirs(items: list[str]) -> list[str]:
+  out: list[str] = []
+  for path_value in items:
+    try:
+      if os.path.isdir(path_value):
+        out.append(path_value)
+    except Exception:
+      pass
+  return out
+
+
 # =============================================================================
 # GUI App
 # =============================================================================
@@ -285,6 +313,23 @@ class GitVisualHistoryApp(ctk.CTk):
     self._gource_process: subprocess.Popen | None = None
     self._watcher_thread: threading.Thread | None = None
 
+    self._recent_repo_paths_max = int(self.config_data.get("recent_repo_paths_max", 16) or 16)
+    if self._recent_repo_paths_max <= 0:
+      self._recent_repo_paths_max = 16
+    raw_recent = self.config_data.get("recent_repo_paths", [])
+    if not isinstance(raw_recent, list):
+      raw_recent = []
+    self._recent_repo_paths: list[str] = []
+    for p in raw_recent:
+      if isinstance(p, str) and p.strip():
+        try:
+          self._recent_repo_paths.append(_norm_dir(p.strip()))
+        except Exception:
+          continue
+    self._recent_repo_paths = _dedupe_keep_order(self._recent_repo_paths)
+    self._recent_repo_paths = _filter_existing_dirs(self._recent_repo_paths)
+    self._recent_repo_paths = self._recent_repo_paths[: self._recent_repo_paths_max]
+
     self.var_repo_path = tk.StringVar(value=str(self.config_data.get("repo_path", "../../")))
     self.var_gource_execs = tk.StringVar(value=", ".join(self.config_data.get("gource_executables", ["gource", "gource.cmd"])))
     self.var_title_prefix = tk.StringVar(value=str(self.config_data.get("title_prefix", "Interactive Commit History: ")))
@@ -312,6 +357,7 @@ class GitVisualHistoryApp(ctk.CTk):
     self.var_highlight_users = tk.BooleanVar(value=bool(g.get("highlight_users", True)))
 
     self._build_ui()
+    self._refresh_recent_repo_menu()
 
     extra_args = self.config_data.get("extra_args", [])
     if isinstance(extra_args, list):
@@ -329,22 +375,29 @@ class GitVisualHistoryApp(ctk.CTk):
     top = ctk.CTkFrame(self)
     top.grid(row=0, column=0, sticky="ew", padx=12, pady=(12, 8))
     top.grid_columnconfigure(1, weight=1)
-    top.grid_columnconfigure(4, weight=1)
+    top.grid_columnconfigure(6, weight=1)
 
     ctk.CTkLabel(top, text="Repo").grid(row=0, column=0, sticky="w", padx=(10, 6), pady=8)
-    self.entry_repo = ctk.CTkEntry(top, textvariable=self.var_repo_path)
+    self.entry_repo = ctk.CTkComboBox(
+      top,
+      variable=self.var_repo_path,
+      values=[],
+      command=self._on_repo_combo_selected,
+      state="normal",
+    )
     self.entry_repo.grid(row=0, column=1, sticky="ew", padx=(0, 6), pady=8)
-    ctk.CTkButton(top, text="Browse", width=90, command=self._choose_repo).grid(row=0, column=2, padx=(0, 10), pady=8)
+    ctk.CTkButton(top, text="Browse", width=90, command=self._choose_repo).grid(row=0, column=2, padx=(0, 6), pady=8)
+    ctk.CTkButton(top, text="Clear History", width=120, command=self._on_clear_recent_repo_history).grid(row=0, column=3, padx=(0, 10), pady=8)
 
     ctk.CTkLabel(top, text="Gource").grid(row=1, column=0, sticky="w", padx=(10, 6), pady=8)
     self.entry_execs = ctk.CTkEntry(top, textvariable=self.var_gource_execs)
     self.entry_execs.grid(row=1, column=1, sticky="ew", padx=(0, 6), pady=8)
     ctk.CTkButton(top, text="Detect", width=90, command=self._detect_gource).grid(row=1, column=2, padx=(0, 10), pady=8)
 
-    ctk.CTkLabel(top, text="Title Prefix").grid(row=0, column=3, sticky="w", padx=(10, 6), pady=8)
-    ctk.CTkEntry(top, textvariable=self.var_title_prefix).grid(row=0, column=4, sticky="ew", padx=(0, 10), pady=8)
-    ctk.CTkLabel(top, text="Logo Path").grid(row=1, column=3, sticky="w", padx=(10, 6), pady=8)
-    ctk.CTkEntry(top, textvariable=self.var_logo_path).grid(row=1, column=4, sticky="ew", padx=(0, 10), pady=8)
+    ctk.CTkLabel(top, text="Title Prefix").grid(row=0, column=5, sticky="w", padx=(10, 6), pady=8)
+    ctk.CTkEntry(top, textvariable=self.var_title_prefix).grid(row=0, column=6, sticky="ew", padx=(0, 10), pady=8)
+    ctk.CTkLabel(top, text="Logo Path").grid(row=1, column=5, sticky="w", padx=(10, 6), pady=8)
+    ctk.CTkEntry(top, textvariable=self.var_logo_path).grid(row=1, column=6, sticky="ew", padx=(0, 10), pady=8)
 
     middle = ctk.CTkFrame(self)
     middle.grid(row=1, column=0, sticky="nsew", padx=12, pady=8)
@@ -448,11 +501,55 @@ class GitVisualHistoryApp(ctk.CTk):
   def _on_change_color_theme(self, value: str) -> None:
     self._log(f"Color theme change selected ({value}); restart may be required for full effect.")
 
+  def _refresh_recent_repo_menu(self) -> None:
+    values = list(self._recent_repo_paths)
+    if not values:
+      values = ["(none)"]
+    self.entry_repo.configure(values=values, state="normal")
+
+    cur = (self.var_repo_path.get() or "").strip()
+    if (not cur) and values and values[0] != "(none)":
+      try:
+        self.var_repo_path.set(os.path.relpath(values[0], PATH_DIR_SCRIPT))
+      except Exception:
+        self.var_repo_path.set(values[0])
+
+  def _push_recent_repo(self, repo_path_abs: str) -> None:
+    try:
+      normalized = _norm_dir(repo_path_abs)
+    except Exception:
+      return
+    if not os.path.isdir(normalized):
+      return
+    self._recent_repo_paths = [normalized] + [p for p in self._recent_repo_paths if p != normalized]
+    self._recent_repo_paths = _dedupe_keep_order(self._recent_repo_paths)
+    self._recent_repo_paths = _filter_existing_dirs(self._recent_repo_paths)
+    self._recent_repo_paths = self._recent_repo_paths[: self._recent_repo_paths_max]
+    self._refresh_recent_repo_menu()
+
+  def _on_repo_combo_selected(self, value: str) -> None:
+    if not value or value == "(none)":
+      return
+    self.var_repo_path.set(value)
+    self._log(f"Repo selected: {value}")
+
+  def _on_clear_recent_repo_history(self) -> None:
+    if not messagebox.askyesno(APP_TITLE, "Clear recent project history?"):
+      return
+    self._recent_repo_paths = []
+    self._refresh_recent_repo_menu()
+    try:
+      self._save_config()
+    except Exception:
+      pass
+    self._log("Cleared recent project history.")
+
   def _choose_repo(self) -> None:
     initial = self._resolve_repo_path_for_ui()
     chosen = filedialog.askdirectory(initialdir=initial if os.path.isdir(initial) else PATH_DIR_SCRIPT)
     if chosen:
       self.var_repo_path.set(os.path.relpath(chosen, PATH_DIR_SCRIPT))
+      self._push_recent_repo(chosen)
       self._log(f"Repo path set to: {self.var_repo_path.get()}")
 
   def _detect_gource(self) -> None:
@@ -473,6 +570,8 @@ class GitVisualHistoryApp(ctk.CTk):
     cfg["appearance_mode"] = self.var_appearance_mode.get().strip() or "System"
     cfg["color_theme"] = self.var_color_theme.get().strip() or "blue"
     cfg["repo_path"] = self.var_repo_path.get().strip() or "../../"
+    cfg["recent_repo_paths_max"] = int(self._recent_repo_paths_max)
+    cfg["recent_repo_paths"] = list(self._recent_repo_paths[: self._recent_repo_paths_max])
     cfg["gource_executables"] = _split_csv_list(self.var_gource_execs.get()) or ["gource", "gource.cmd"]
     cfg["prompt_before_launch"] = bool(self.var_prompt_before_launch.get())
     cfg["prompt_before_close"] = bool(self.var_prompt_before_close.get())
@@ -539,6 +638,7 @@ class GitVisualHistoryApp(ctk.CTk):
     if not os.path.isdir(repo_path):
       messagebox.showerror(APP_TITLE, f"Repo path does not exist:\n{repo_path}")
       return
+    self._push_recent_repo(repo_path)
     try:
       os.startfile(repo_path)  # type: ignore[attr-defined]
     except Exception:
@@ -555,6 +655,8 @@ class GitVisualHistoryApp(ctk.CTk):
     except Exception as e:
       messagebox.showerror(APP_TITLE, str(e))
       return
+
+    self._push_recent_repo(repo_path)
 
     if bool(cfg.get("show_controls", True)):
       self._log("")
