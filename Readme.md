@@ -27,6 +27,12 @@ Install:
 pip install customtkinter
 ```
 
+Or use the local bootstrap script:
+
+```bash
+python git/git_visual_history/setup.py
+```
+
 ### Gource
 
 Install Gource and ensure one of these works in your terminal:
