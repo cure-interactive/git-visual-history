@@ -101,18 +101,18 @@ DEFAULT_CONFIG: dict[str, Any] = {
   "logo_path": "",
   "extra_args": [],
   "gource_options": {
-    "fullscreen": True,
+    "fullscreen": False,
     "camera_mode": "overview",
     "background": "111111",
-    "seconds_per_day": "24",
+    "seconds_per_day": "3",
     "auto_skip_seconds": "1",
     "file_idle_time": "0",
     "max_file_lag": "1",
-    "bloom_multiplier": "0.5",
-    "bloom_intensity": "0.5",
+    "bloom_multiplier": "0",
+    "bloom_intensity": "0",
     "branch_elasticity": "0.0001",
     "show_key": True,
-    "highlight_users": True,
+    "highlight_users": False,
   },
 }
 
@@ -303,16 +303,17 @@ GOURCE_OPTION_EXAMPLES: dict[str, str] = {
 }
 
 GOURCE_OPTION_POPULATED_DEFAULTS: dict[str, str] = {
-  "time_scale": "1.0",
-  "file_idle_time_at_end": "5",
-  "padding": "1.1",
+  "time_scale": "2",
+  "file_idle_time_at_end": "600",
+  "padding": "0",
   "max_files": "0",
   "max_user_speed": "500",
   "user_friction": "1",
+  "user_scale": "0.1",
   "hash_seed": "42",
   "font_scale": "1.0",
   "file_font_size": "16",
-  "dir_font_size": "18",
+  "dir_font_size": "14",
   "user_font_size": "20",
   "font_colour": "FFFFFF",
   "date_format": "%Y-%m-%d",
@@ -339,7 +340,7 @@ GOURCE_OPTION_ENUMS: dict[str, list[str]] = {
 GOURCE_OPTION_RANGES: dict[str, tuple[float, float, int]] = {
   "bloom_multiplier": (0.0, 5.0, 100),
   "bloom_intensity": (0.0, 5.0, 100),
-  "padding": (0.01, 2.0, 199),
+  "padding": (0.0, 2.0, 200),
   "user_scale": (0.1, 5.0, 98),
   "font_scale": (0.25, 4.0, 75),
 }
@@ -372,7 +373,7 @@ GOURCE_OPTION_IMAGE_KEYS: set[str] = {
 }
 
 GOURCE_OPTION_SPECS: list[dict[str, Any]] = [
-  {"key": "fullscreen", "label": "Fullscreen", "type": "bool", "tab": "Window", "flag": "-f", "default": True},
+  {"key": "fullscreen", "label": "Fullscreen", "type": "bool", "tab": "Window", "flag": "-f", "default": False},
   {"key": "viewport", "label": "Viewport", "type": "string", "tab": "Window", "flag": "--viewport", "default": ""},
   {"key": "screen", "label": "Screen", "type": "string", "tab": "Window", "flag": "--screen", "default": ""},
   {"key": "high_dpi", "label": "High DPI", "type": "bool", "tab": "Window", "flag": "--high-dpi", "default": False},
@@ -390,7 +391,7 @@ GOURCE_OPTION_SPECS: list[dict[str, Any]] = [
   {"key": "loop", "label": "Loop", "type": "bool", "tab": "Timeline", "flag": "--loop", "default": False},
   {"key": "loop_delay_seconds", "label": "Loop Delay Seconds", "type": "string", "tab": "Timeline", "flag": "--loop-delay-seconds", "default": ""},
   {"key": "auto_skip_seconds", "label": "Auto Skip Seconds", "type": "string", "tab": "Timeline", "flag": "--auto-skip-seconds", "default": "1"},
-  {"key": "seconds_per_day", "label": "Seconds Per Day", "type": "string", "tab": "Timeline", "flag": "--seconds-per-day", "default": "24"},
+  {"key": "seconds_per_day", "label": "Seconds Per Day", "type": "string", "tab": "Timeline", "flag": "--seconds-per-day", "default": "3"},
   {"key": "realtime", "label": "Realtime", "type": "bool", "tab": "Timeline", "flag": "--realtime", "default": False},
   {"key": "no_time_travel", "label": "No Time Travel", "type": "bool", "tab": "Timeline", "flag": "--no-time-travel", "default": False},
   {"key": "author_time", "label": "Author Time", "type": "bool", "tab": "Timeline", "flag": "--author-time", "default": False},
@@ -405,8 +406,8 @@ GOURCE_OPTION_SPECS: list[dict[str, Any]] = [
   {"key": "no_vsync", "label": "Disable VSync", "type": "bool", "tab": "Scene", "flag": "--no-vsync", "default": False},
   {"key": "background", "label": "Background Colour", "type": "string", "tab": "Scene", "flag": "--background-colour", "default": "111111"},
   {"key": "background_image", "label": "Background Image", "type": "string", "tab": "Scene", "flag": "--background-image", "default": ""},
-  {"key": "bloom_multiplier", "label": "Bloom Mult (0 disables)", "type": "string", "tab": "Scene", "flag": "--bloom-multiplier", "default": "0.5"},
-  {"key": "bloom_intensity", "label": "Bloom Intensity", "type": "string", "tab": "Scene", "flag": "--bloom-intensity", "default": "0.5"},
+  {"key": "bloom_multiplier", "label": "Bloom Mult (0 disables)", "type": "string", "tab": "Scene", "flag": "--bloom-multiplier", "default": "0"},
+  {"key": "bloom_intensity", "label": "Bloom Intensity", "type": "string", "tab": "Scene", "flag": "--bloom-intensity", "default": "0"},
   {"key": "max_files", "label": "Max Files", "type": "string", "tab": "Scene", "flag": "--max-files", "default": ""},
   {"key": "max_file_lag", "label": "Max File Lag", "type": "string", "tab": "Scene", "flag": "--max-file-lag", "default": "1"},
   {"key": "max_user_speed", "label": "Max User Speed", "type": "string", "tab": "Scene", "flag": "--max-user-speed", "default": ""},
@@ -443,7 +444,7 @@ GOURCE_OPTION_SPECS: list[dict[str, Any]] = [
   {"key": "follow_user", "label": "Follow User", "type": "string", "tab": "Users", "flag": "--follow-user", "default": ""},
   {"key": "highlight_dirs", "label": "Highlight Dirs", "type": "bool", "tab": "Users", "flag": "--highlight-dirs", "default": False},
   {"key": "highlight_user", "label": "Highlight User", "type": "string", "tab": "Users", "flag": "--highlight-user", "default": ""},
-  {"key": "highlight_users", "label": "Highlight Users", "type": "bool", "tab": "Users", "flag": "--highlight-users", "default": True},
+  {"key": "highlight_users", "label": "Highlight Users", "type": "bool", "tab": "Users", "flag": "--highlight-users", "default": False},
   {"key": "highlight_colour", "label": "Highlight Colour", "type": "string", "tab": "Users", "flag": "--highlight-colour", "default": ""},
   {"key": "selection_colour", "label": "Selection Colour", "type": "string", "tab": "Users", "flag": "--selection-colour", "default": ""},
   {"key": "user_image_dir", "label": "User Image Dir", "type": "string", "tab": "Users", "flag": "--user-image-dir", "default": ""},
@@ -466,12 +467,18 @@ GOURCE_OPTION_SPECS: list[dict[str, Any]] = [
   {"key": "save_config", "label": "Save Gource Config", "type": "string", "tab": "Output", "flag": "--save-config", "default": ""},
 ]
 
+DEFAULT_GOURCE_HIDE_ELEMENTS: list[str] = [
+  "bloom",
+  "users",
+  "usernames",
+]
+
 for _spec in GOURCE_OPTION_SPECS:
   _key = str(_spec["key"])
   if _spec.get("type") != "bool" and _spec.get("default", "") == "" and _key in GOURCE_OPTION_POPULATED_DEFAULTS:
     _spec["default"] = GOURCE_OPTION_POPULATED_DEFAULTS[_key]
   DEFAULT_CONFIG["gource_options"].setdefault(_spec["key"], _spec["default"])
-DEFAULT_CONFIG["gource_options"].setdefault("hide", [])
+DEFAULT_CONFIG["gource_options"].setdefault("hide", list(DEFAULT_GOURCE_HIDE_ELEMENTS))
 DEFAULT_REPO_GOURCE_CONFIG["extra_args"] = list(DEFAULT_CONFIG["extra_args"])
 DEFAULT_REPO_GOURCE_CONFIG["gource_options"] = json.loads(json.dumps(DEFAULT_CONFIG["gource_options"]))
 
@@ -1062,7 +1069,8 @@ class GitVisualHistoryApp(ctk.CTk):
         for index, (key, label, desc) in enumerate(GOURCE_HIDE_DISPLAY_ELEMENTS):
           row = 1 + (index // 4)
           col = index % 4
-          self._labeled_checkbox(hide_frame, row, col, label, self.hide_vars[key], desc, reset_command=lambda v=self.hide_vars[key]: v.set(False), reset_var=self.hide_vars[key], reset_default=False)
+          default_hidden = key in DEFAULT_GOURCE_HIDE_ELEMENTS
+          self._labeled_checkbox(hide_frame, row, col, label, self.hide_vars[key], desc, reset_command=lambda v=self.hide_vars[key], d=default_hidden: v.set(d), reset_var=self.hide_vars[key], reset_default=default_hidden)
 
       if tab_name == "Output":
         extra_row = (len(specs) + 2) // 3 + 2
