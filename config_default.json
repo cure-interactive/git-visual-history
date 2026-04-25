@@ -13,23 +13,5 @@
     "gource.cmd"
   ],
   "prompt_before_launch": true,
-  "prompt_before_close": false,
-  "show_controls": true,
-  "title_prefix": "Interactive Commit History: ",
-  "logo_path": "Scripts/VisualizeHistory/Graphic.png",
-  "extra_args": [],
-  "gource_options": {
-    "fullscreen": true,
-    "camera_mode": "overview",
-    "background": "111111",
-    "seconds_per_day": "24",
-    "auto_skip_seconds": "1",
-    "file_idle_time": "0",
-    "max_file_lag": "1",
-    "bloom_multiplier": "0.5",
-    "bloom_intensity": "0.5",
-    "branch_elasticity": "0.0001",
-    "show_key": true,
-    "highlight_users": true
-  }
+  "prompt_before_close": false
 }
