@@ -8,7 +8,7 @@ CustomTkinter launcher for interactive git history visualization with Gource.
 Features:
 - GUI editor for common Gource options
 - Config persistence (config.json beside script)
-- First-run config auto-created from config_default.json
+- First-run config auto-created from config-default.json
 - Window size + appearance/theme persistence
 - Best-effort Windows taskbar identity + window icon hooks
 """
@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import threading
@@ -51,8 +52,42 @@ MONOSPACE_FONT_FAMILY = "Consolas"
 
 PATH_DIR_SCRIPT = os.path.abspath(os.path.dirname(__file__))
 PATH_CONFIG_JSON = os.path.join(PATH_DIR_SCRIPT, "config.json")
-PATH_CONFIG_DEFAULT_JSON = os.path.join(PATH_DIR_SCRIPT, "config_default.json")
+PATH_CONFIG_DEFAULT_JSON = os.path.join(PATH_DIR_SCRIPT, "config-default.json")
 REPO_GOURCE_CONFIG_FILENAME = ".gource.json"
+
+
+def bundled_gource_candidates() -> list[str]:
+  """Return native bundled Gource launchers in preference order."""
+  if sys.platform == "win32":
+    relative_paths = [
+      ("vendor", "gource", "windows-x86_64", "gource.exe"),
+    ]
+  elif sys.platform == "darwin":
+    machine = os.uname().machine.lower()
+    architecture = "arm64" if machine in {"arm64", "aarch64"} else "x86_64"
+    relative_paths = [
+      ("vendor", "gource", f"macos-{architecture}", "gource"),
+    ]
+  else:
+    machine = os.uname().machine.lower()
+    architecture = "arm64" if machine in {"arm64", "aarch64"} else "x86_64"
+    relative_paths = [
+      ("vendor", "gource", f"linux-{architecture}", "gource.AppImage"),
+      ("vendor", "gource", f"linux-{architecture}", "gource"),
+    ]
+  return [os.path.join(PATH_DIR_SCRIPT, *parts) for parts in relative_paths]
+
+
+def _ensure_executable(path: str) -> bool:
+  if not os.path.isfile(path):
+    return False
+  if os.name != "nt" and not os.access(path, os.X_OK):
+    try:
+      mode = os.stat(path).st_mode
+      os.chmod(path, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    except OSError:
+      return False
+  return True
 
 
 def _dialog_title(label: str) -> str:
@@ -691,11 +726,11 @@ def _load_preview_image(path_value: str, max_size: tuple[int, int] = (120, 72)):
 
 
 def find_gource_executable(candidates: list[str]) -> str | None:
-  for candidate in candidates:
+  for candidate in [*bundled_gource_candidates(), *candidates]:
     c = str(candidate or "").strip()
     if not c:
       continue
-    if os.path.isabs(c) and os.path.isfile(c):
+    if os.path.isabs(c) and _ensure_executable(c):
       return c
     found = shutil.which(c)
     if found:
@@ -729,6 +764,10 @@ def build_gource_command(
     hidden_elements = []
 
   cmd: list[str] = [gource_executable]
+  if sys.platform.startswith("linux") and gource_executable.lower().endswith(".appimage"):
+    # Extraction mode avoids a host dependency on FUSE while still executing
+    # the bundled native ELF payload.
+    cmd.append("--appimage-extract-and-run")
   cmd.append("-f" if bool(options.get("fullscreen", True)) else "-w")
   if title:
     cmd.extend(["--title", title])

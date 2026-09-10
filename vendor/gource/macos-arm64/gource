@@ -1,0 +1,23 @@
+#!/bin/sh
+set -eu
+
+source_directory=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+bundle_id=$(/usr/bin/shasum -a 256 "$source_directory/gource-bin" | /usr/bin/cut -c 1-16)
+cache_root=${XDG_CACHE_HOME:-"$HOME/Library/Caches"}
+directory="$cache_root/GitVisualHistory/gource/$bundle_id"
+stamp="$directory/.adhoc-signed"
+
+if [ ! -e "$stamp" ]; then
+  /bin/mkdir -p "$directory"
+  /bin/cp "$source_directory/gource-bin" "$source_directory"/*.dylib "$directory/"
+  /bin/cp -R "$source_directory/data" "$directory/data"
+  /bin/chmod u+rwx "$directory/gource-bin" "$directory"/*.dylib
+  /usr/bin/xattr -dr com.apple.quarantine "$directory" 2>/dev/null || true
+  for binary in "$directory/gource-bin" "$directory"/*.dylib; do
+    /usr/bin/codesign --force --sign - "$binary"
+  done
+  : > "$stamp"
+fi
+
+export DYLD_LIBRARY_PATH="$directory${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
+exec "$directory/gource-bin" "$@"

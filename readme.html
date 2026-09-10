@@ -284,27 +284,20 @@ pre[data-line] .line-highlight[data-end]:after {
 <p>Once Python is installed, you should be able to run it from the command line. You can verify that Python is installed correctly by running the command <code>python --version</code> in your terminal or command prompt. If Python is installed correctly, you should see the version number printed in the output.</p>
 <h4 class="mume-header" id="gource">Gource</h4>
 
-<p>You also need to have Gource installed on your system. Here&apos;s how to install it:</p>
-<ol>
-<li>Go to the official <a href="https://github.com/acaudwell/Gource">Gource repository</a> on GitHub.</li>
-<li>Download the appropriate installer for your operating system (Windows, macOS, or Linux).</li>
-<li>Follow the installation instructions provided in the installer.</li>
-</ol>
-<p>Once Gource is installed, you should be able to run it from the command line. You can verify that Gource is installed correctly by running the command <code>gource --version</code> in your terminal or command prompt. If Gource is installed correctly, you should see the version number printed in the output.</p>
+<p>Gource is bundled for Windows x86-64, Linux x86-64, macOS arm64, and macOS x86-64. The launcher selects the matching native payload automatically, so a separate Gource installation is not required on those platforms.</p>
 <h3 class="mume-header" id="setup">Setup</h3>
 
 <ol>
 <li>Navigate to the directory containing the script.</li>
-<li>Modify the script with your desired parameters (e.g., working directory, Gource options).</li>
-<li>Run the script in your terminal or command prompt.</li>
+<li>Run <code>python setup.py --venv</code> to create an environment and install the Python dependencies.</li>
+<li>Run the launcher in your terminal or command prompt.</li>
 </ol>
 <hr>
 <h2 class="mume-header" id="usage">Usage</h2>
 
 <p>To run the script, open your terminal or command prompt and navigate to the directory containing the script. Then, run the script with the command:</p>
-<pre data-role="codeBlock" data-info="python" class="language-python">python visualize_history<span class="token punctuation">.</span>py
-</pre><p>When you run the script, you will be prompted to enter the working directory for the subprocess. This is the directory where the Gource visualization will be created. You can enter a relative or absolute path.</p>
-<p>The script will then automatically detect the project name, set Gource parameters, and attempt to run Gource using the available executables (<code>gource</code> and <code>gource.cmd</code>). You can modify the Gource options in the script to customize the visualization.</p>
+<pre data-role="codeBlock" data-info="python" class="language-python">python visualize-history<span class="token punctuation">.</span>py
+</pre><p>Select a Git repository in the launcher, adjust any desired Gource options, and launch the visualization. The matching bundled Gource executable takes precedence; a configured system executable is used only as a fallback.</p>
 <p>Once the Gource visualization is created, you can use the keyboard controls to interact with it. See the Gource Controls section in the script for a list of available controls.</p>
 <hr>
 <h2 class="mume-header" id="contributing">Contributing</h2>
