@@ -1,0 +1,37 @@
+{
+  "id": "macos-portable-gource-validation",
+  "revision": 3,
+  "state": "draft",
+  "category": "wishlist",
+  "objective": "Validate the bundled Gource launcher and payload natively on supported macOS architectures.",
+  "success_criteria": [
+    "macOS arm64 payload launches through visualize-history.py",
+    "macOS x86_64 payload launches through visualize-history.py",
+    "Each payload starts without relying on Homebrew or another system Gource installation"
+  ],
+  "scope": ["macOS arm64", "macOS x86_64", "native launch smoke tests"],
+  "exclusions": ["Windows validation", "Linux validation"],
+  "constraints": ["Must be validated on real macOS or a trusted macOS runner"],
+  "ordered_tasks": ["package-arm64", "package-x86_64", "smoke-test-launcher"],
+  "dependencies": ["Native macOS build environment"],
+  "validation_gates": ["gource help invocation", "launcher executable discovery", "repository visualization launch"],
+  "risks": ["Architecture-specific dynamic library paths", "Unsigned binary quarantine behavior"],
+  "reserve": "Unestimated wishlist work",
+  "estimates": "Unestimated until a macOS executor is available",
+  "created_at": "2026-09-10T13:08:00-04:00",
+  "updated_at": "2026-09-10T15:10:00-04:00",
+  "revision_log": [
+    {
+      "revision": 1,
+      "reason": "Created separately from typical milestones because macOS validation is unavailable on the current host."
+    },
+    {
+      "revision": 2,
+      "reason": "Native arm64 and x86-64 bundles were packaged and statically verified; only native macOS runtime validation remains."
+    },
+    {
+      "revision": 3,
+      "reason": "The launcher wrapper now removes copied quarantine metadata before ad-hoc signing; native Gatekeeper behavior still requires Apple hardware validation."
+    }
+  ]
+}

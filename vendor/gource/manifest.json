@@ -1,0 +1,34 @@
+{
+  "windows-x86_64": {
+    "version": "0.53",
+    "source": "https://github.com/acaudwell/Gource/releases/download/gource-0.53/gource-0.53.win64.zip",
+    "archive_sha256": "23fc7814bdc77898c7fc5991e25676da01b7feca053e4067812b4c580f5ae558",
+    "entrypoint": "gource.exe",
+    "validation": "Native help and short repository-render launch passed on Windows"
+  },
+  "linux-x86_64": {
+    "version": "0.56",
+    "source": "Gource 0.56 source release built on Ubuntu 22.04 LTS with AppImage-bundled runtime dependencies",
+    "source_archive_sha256": "332d89b9a979b17417fbce0edd72b19914f1409fd126a13d11787d0e15dc0d79",
+    "linuxdeploy_sha256": "36a2d7e274d12e1050d0e9ecfe11d339ed54720b2bec464c286d53f8b07f5c62",
+    "sha256": "dcfbeea0e7c664b56706613685400693bdbe34b898d423516933a48efbf7d0da",
+    "entrypoint": "gource.AppImage",
+    "validation": "Native AppImage full-help and dynamic-library closure checks passed under Ubuntu 22.04 WSL"
+  },
+  "macos-x86_64": {
+    "version": "0.56",
+    "source": "Homebrew native Sonoma x86-64 bottles, relocated into the bundle",
+    "gource_binary_sha256": "68d7ec3937add9391ec9f7d7823d40212b4e45797d08d68872ad9b8ed00d1ba1",
+    "entrypoint": "gource",
+    "validation": "Mach-O x86-64 identity and closed relocated dependency graph verified; runtime untested",
+    "status": "native-unvalidated"
+  },
+  "macos-arm64": {
+    "version": "0.56",
+    "source": "Homebrew native Sonoma arm64 bottles, relocated into the bundle",
+    "gource_binary_sha256": "d3e7ce0c1efbfdd4d2b47ec71ea749cd4caa975ea6c57f1e25ddc61751faa51c",
+    "entrypoint": "gource",
+    "validation": "Mach-O arm64 identity and closed relocated dependency graph verified; runtime untested",
+    "status": "native-unvalidated"
+  }
+}
