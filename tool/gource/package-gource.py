@@ -35,9 +35,10 @@ def validate(executable: str, target_platform: str) -> None:
   if not os.path.isfile(executable):
     raise RuntimeError(f"Portable Gource payload was not created: {executable}")
   if target_platform == "linux" and not sys.platform.startswith("linux"):
-    # The Dockerfile already executes the native AppImage smoke test in its
-    # Ubuntu build stage. A host such as Windows cannot execute that ELF file.
-    print("Gource v0.56 Linux smoke test passed in the Docker build stage")
+    # The Dockerfile already executes the AppImage launcher and verifies a
+    # rendered PPM stream in its Ubuntu build stage. A host such as Windows
+    # cannot execute that ELF file directly.
+    print("Gource v0.56 Linux functional render passed in the Docker build stage")
     return
   command = [executable, "-h"]
   if sys.platform.startswith("linux") and executable.endswith(".AppImage"):
