@@ -3,8 +3,8 @@ FROM ubuntu:22.04 AS build
 RUN apt-get update \
   && apt-get install --yes --no-install-recommends \
     build-essential ca-certificates curl file libboost-filesystem-dev \
-    libfreetype6-dev libglew-dev libglm-dev libpcre2-dev libpng-dev \
-    libsdl2-dev libsdl2-image-dev pkg-config \
+    libfreetype6-dev libgl1-mesa-dri libglew-dev libglm-dev libpcre2-dev \
+    libpng-dev libsdl2-dev libsdl2-image-dev pkg-config xvfb \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -27,6 +27,7 @@ RUN curl --fail --location \
   && mkdir -p AppDir/usr/bin/data \
   && cp "gource-${GOURCE_VERSION}/gource" AppDir/usr/bin/gource \
   && cp -a "gource-${GOURCE_VERSION}/data/." AppDir/usr/bin/data/ \
+  && ln -s usr/bin/data AppDir/data \
   && mkdir -p AppDir/usr/share/doc/gource \
   && cp "gource-${GOURCE_VERSION}/COPYING" AppDir/usr/share/doc/gource/COPYING \
   && find /usr/share/doc -name copyright -type f -exec cp --parents '{}' AppDir \; \
@@ -53,6 +54,35 @@ RUN curl --fail --location \
   && chmod +x gource.AppImage \
   && ./gource.AppImage --appimage-extract-and-run -h >/tmp/gource-help.txt \
   && grep -q "Gource v${GOURCE_VERSION}" /tmp/gource-help.txt
+
+RUN set -eu; \
+  printf '%s\n' \
+    '1700000000|Builder|A|src/main.cpp|FF0000' \
+    '1700086400|Builder|M|src/main.cpp|00FF00' \
+    > /tmp/gource-custom.log; \
+  Xvfb :99 -screen 0 320x240x24 -nolisten tcp > /tmp/xvfb.log 2>&1 & \
+  xvfb_pid=$!; \
+  trap 'kill "$xvfb_pid" 2>/dev/null || true' EXIT; \
+  attempt=0; \
+  while [ ! -S /tmp/.X11-unix/X99 ]; do \
+    attempt=$((attempt + 1)); \
+    if [ "$attempt" -ge 50 ]; then cat /tmp/xvfb.log; exit 1; fi; \
+    sleep 0.1; \
+  done; \
+  DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 ./gource.AppImage \
+    --appimage-extract-and-run \
+    --log-format custom \
+    --viewport 320x240 \
+    --output-ppm-stream /tmp/gource.ppm \
+    --output-framerate 25 \
+    --seconds-per-day 0.05 \
+    --auto-skip-seconds 1 \
+    --stop-at-time 0.5 \
+    --stop-at-end \
+    --disable-input \
+    --no-vsync \
+    /tmp/gource-custom.log; \
+  test -s /tmp/gource.ppm
 
 FROM scratch AS export
 COPY --from=build /build/gource.AppImage /

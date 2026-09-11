@@ -11,9 +11,9 @@
     "source": "Gource 0.56 source release built on Ubuntu 22.04 LTS with AppImage-bundled runtime dependencies",
     "source_archive_sha256": "332d89b9a979b17417fbce0edd72b19914f1409fd126a13d11787d0e15dc0d79",
     "linuxdeploy_sha256": "36a2d7e274d12e1050d0e9ecfe11d339ed54720b2bec464c286d53f8b07f5c62",
-    "sha256": "dcfbeea0e7c664b56706613685400693bdbe34b898d423516933a48efbf7d0da",
+    "sha256": "531a1655deaeac95de772a6588ea1615d729c35fbc587263c7002ce8a037fca1",
     "entrypoint": "gource.AppImage",
-    "validation": "Native AppImage full-help and dynamic-library closure checks passed under Ubuntu 22.04 WSL"
+    "validation": "Native AppImage launcher rendered repository frames under Ubuntu 22.04 on Docker Desktop WSL 2"
   },
   "macos-x86_64": {
     "version": "0.56",
