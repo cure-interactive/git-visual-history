@@ -69,6 +69,18 @@ payloads are native Mach-O arm64/x86-64 bundles with closed dependency graphs,
 but remain runtime-untested until the separate macOS wishlist validation can be
 run on Apple hardware.
 
+### macOS runtime validation still needed
+
+Static checks found separate Mach-O executables for Apple silicon and Intel,
+no remaining Homebrew library paths, and no missing non-system dynamic libraries.
+The launcher copies each payload into its cache, removes quarantine metadata,
+and ad-hoc signs the copy. These checks do not establish native runtime or
+Gatekeeper behavior. On both arm64 and x86-64 macOS, verify that the bundled
+`gource` executable starts, the launcher discovers that bundled executable
+without a system Gource installation, and a repository visualization opens.
+Keep macOS runtime support marked unverified until those checks pass on real
+Mac hardware or a trusted macOS runner.
+
 Build and smoke-test the Linux x86-64 AppImage with Docker Desktop:
 
 ```bash
